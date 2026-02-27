@@ -1,31 +1,28 @@
 package com.reservas.ms_reservas.controller;
 
 import com.reservas.ms_reservas.model.Reserva;
-import com.reservas.ms_reservas.repository.ReservaRepository;
+import com.reservas.ms_reservas.service.ReservaService;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/reservas")
 public class ReservaController {
 
-    private final ReservaRepository reservaRepository;
+    private final ReservaService reservaService;
 
-    public ReservaController(ReservaRepository reservaRepository) {
-        this.reservaRepository = reservaRepository;
+    public ReservaController(ReservaService reservaService) {
+        this.reservaService = reservaService;
     }
 
     @GetMapping
     public List<Reserva> listar() {
-        return reservaRepository.findAll();
+        return reservaService.listar();
     }
 
     @PostMapping
     public Reserva crear(@RequestBody Reserva reserva) {
-        reserva.setEstado("PENDIENTE");
-        reserva.setFechaCreacion(LocalDateTime.now());
-        return reservaRepository.save(reserva);
+        return reservaService.crear(reserva);
     }
 }
