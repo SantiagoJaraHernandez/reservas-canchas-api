@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping
+@CrossOrigin(origins = "http://localhost:5173")
 public class GatewayController {
 
     private final WebClient webClient;
