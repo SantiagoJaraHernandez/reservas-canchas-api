@@ -1,4 +1,4 @@
-package main.java.com.reservas.gateway;
+package com.reservas.gateway;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5176"})
 public class GatewayController {
 
     private final WebClient webClient;
