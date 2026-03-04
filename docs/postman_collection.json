@@ -1,0 +1,119 @@
+{
+  "info": {
+    "name": "Reservas Canchas API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Listar reservas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/reservas",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "reservas"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Crear reserva",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": 1,\n  \"idCancha\": 2,\n  \"fecha\": \"2026-03-10\",\n  \"horaInicio\": \"10:00\",\n  \"horaFin\": \"11:00\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/reservas",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "reservas"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Obtener reserva",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/reservas/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "reservas",
+            ":id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Actualizar reserva",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idUsuario\": 1,\n  \"idCancha\": 2,\n  \"fecha\": \"2026-03-10\",\n  \"horaInicio\": \"12:00\",\n  \"horaFin\": \"13:00\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/reservas/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "reservas",
+            ":id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Eliminar reserva",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/reservas/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "reservas",
+            ":id"
+          ]
+        }
+      }
+    }
+  ]
+}
