@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: reservas-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: reservasdb
+      POSTGRES_USER: reservas
+      POSTGRES_PASSWORD: reservas123
+    # map to a different host port to avoid collision with local Postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: reservas-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@reservas.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+
+volumes:
+  postgres_data:
