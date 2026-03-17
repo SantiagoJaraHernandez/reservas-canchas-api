@@ -30,6 +30,13 @@ public class GlobalExceptionHandler {
                 .body(errorBody("Validacion fallida: " + campos));
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+public ResponseEntity<?> handleInvalidCredentials(InvalidCredentialsException ex) {
+    return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(errorBody(ex.getMessage()));
+}
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneric(Exception ex) {
         return ResponseEntity

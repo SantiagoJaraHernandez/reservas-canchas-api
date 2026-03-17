@@ -5,6 +5,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/authdb}
-  security:
-    user:
-      name: disabled
+
+jwt:
+  secret: ${JWT_SECRET:miClaveSecretaSuperSeguraParaDesarrollo2026}
+  expiration: 86400000
