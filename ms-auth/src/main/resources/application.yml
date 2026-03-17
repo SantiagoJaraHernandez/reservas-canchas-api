@@ -1,0 +1,11 @@
+server:
+  port: 8082
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/authdb}
+
+jwt:
+  secret: ${JWT_SECRET:miClaveSecretaSuperSeguraParaDesarrollo2026}
+  expiration: 86400000

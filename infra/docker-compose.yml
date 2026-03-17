@@ -1,5 +1,4 @@
 version: '3.9'
-
 services:
 
   postgres:
@@ -10,7 +9,6 @@ services:
       POSTGRES_DB: reservasdb
       POSTGRES_USER: reservas
       POSTGRES_PASSWORD: reservas123
-    # map to a different host port to avoid collision with local Postgres
     ports:
       - "5433:5432"
     volumes:
@@ -26,5 +24,54 @@ services:
     ports:
       - "5050:80"
 
+  mongodb:
+    image: mongo:7
+    container_name: reservas-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: authdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  ms-auth:
+    build: ../ms-auth
+    container_name: ms-auth
+    restart: always
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/authdb
+      JWT_SECRET: miClaveSecretaSuperSeguraParaDesarrollo2026
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongodb
+
+  ms-reservas:
+    build: ../ms-reservas
+    container_name: ms-reservas
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/reservasdb
+      SPRING_DATASOURCE_USERNAME: reservas
+      SPRING_DATASOURCE_PASSWORD: reservas123
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+
+  gateway:
+    build: ../gateway
+    container_name: gateway
+    restart: always
+    environment:
+      MS_RESERVAS_URL: http://ms-reservas:8081
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5176
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ms-reservas
+
 volumes:
   postgres_data:
+  mongodb_data:
