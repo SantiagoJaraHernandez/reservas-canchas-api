@@ -35,6 +35,18 @@ services:
     volumes:
       - mongodb_data:/data/db
 
+  ms-auth:
+    build: ../ms-auth
+    container_name: ms-auth
+    restart: always
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/authdb
+      JWT_SECRET: miClaveSecretaSuperSeguraParaDesarrollo2026
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongodb
+
   ms-reservas:
     build: ../ms-reservas
     container_name: ms-reservas
