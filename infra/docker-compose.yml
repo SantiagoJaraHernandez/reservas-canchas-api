@@ -24,6 +24,17 @@ services:
     ports:
       - "5050:80"
 
+  mongodb:
+    image: mongo:7
+    container_name: reservas-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: authdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
   ms-reservas:
     build: ../ms-reservas
     container_name: ms-reservas
@@ -51,3 +62,4 @@ services:
 
 volumes:
   postgres_data:
+  mongodb_data:

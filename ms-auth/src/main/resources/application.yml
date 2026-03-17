@@ -1,0 +1,10 @@
+server:
+  port: 8082
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/authdb}
+  security:
+    user:
+      name: disabled
