@@ -1,5 +1,6 @@
 D:\Proyectos\Sistemas Distribuidos\reservas-canchas-api\gateway\src\main\java\com\reservas\gateway\config\GatewayProperties.java
 D:\Proyectos\Sistemas Distribuidos\reservas-canchas-api\gateway\src\main\java\com\reservas\gateway\config\WebClientConfig.java
+D:\Proyectos\Sistemas Distribuidos\reservas-canchas-api\gateway\src\main\java\com\reservas\gateway\exception\GatewayException.java
 D:\Proyectos\Sistemas Distribuidos\reservas-canchas-api\gateway\src\main\java\com\reservas\gateway\GatewayApplication.java
 D:\Proyectos\Sistemas Distribuidos\reservas-canchas-api\gateway\src\main\java\com\reservas\gateway\GatewayController.java
-D:\Proyectos\Sistemas Distribuidos\reservas-canchas-api\gateway\src\main\java\com\reservas\gateway\GatewayException.java
+D:\Proyectos\Sistemas Distribuidos\reservas-canchas-api\gateway\src\main\java\com\reservas\gateway\security\JwtAuthenticationFilter.java

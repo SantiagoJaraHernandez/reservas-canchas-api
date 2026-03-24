@@ -1,2 +1,6 @@
+com\reservas\gateway\security\JwtAuthenticationFilter.class
+com\reservas\gateway\config\GatewayProperties.class
 com\reservas\gateway\GatewayApplication.class
 com\reservas\gateway\GatewayController.class
+com\reservas\gateway\exception\GatewayException.class
+com\reservas\gateway\config\WebClientConfig.class
