@@ -18,7 +18,7 @@ public class Reserva {
     private Long id;
 
     @Column(nullable = false)
-    private Long idUsuario;
+    private String idUsuario;
 
     @Column(nullable = false)
     private Long idCancha;

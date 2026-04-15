@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,26 +28,26 @@ public class ReservaController {
     public ResponseEntity<List<ReservaDTO>> listar(
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-User-Role", required = false) String role) {
-        
+
         log.info("GET /reservas - User: {}, Role: {}", userId, role);
-        
+
         if (ADMIN_ROLE.equals(role)) {
-            log.info("ADMIN user {} listing all reservas", userId);
             List<ReservaDTO> reservas = reservaService.listar().stream()
                     .map(ReservaDTO::fromEntity)
                     .collect(Collectors.toList());
             return ResponseEntity.ok(reservas);
-        } else if (userId != null) {
-            log.info("USER {} listing their own reservas", userId);
-            List<ReservaDTO> reservas = reservaService.listar().stream()
-                    .filter(r -> r.getIdUsuario().equals(Long.parseLong(userId)))
-                    .map(ReservaDTO::fromEntity)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(reservas);
-        } else {
-            log.warn("Unauthorized access attempt to list reservas. No role or userId header");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
+        if (userId != null && !userId.isBlank()) {
+            List<ReservaDTO> reservas = reservaService.listar().stream()
+                    .filter(r -> userId.equals(r.getIdUsuario()))
+                    .map(ReservaDTO::fromEntity)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(reservas);
+        }
+
+        log.warn("Unauthorized access attempt to list reservas");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @GetMapping("/{id}")
@@ -54,22 +55,20 @@ public class ReservaController {
             @PathVariable Long id,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-User-Role", required = false) String role) {
-        
+
         log.info("GET /reservas/{} - User: {}, Role: {}", id, userId, role);
-        
+
         Reserva reserva = reservaService.obtener(id);
-        
-        // ADMIN puede ver cualquier reserva
+
         if (ADMIN_ROLE.equals(role)) {
             return ResponseEntity.ok(ReservaDTO.fromEntity(reserva));
         }
-        
-        // USER solo puede ver sus propias reservas
-        if (userId != null && reserva.getIdUsuario().equals(Long.parseLong(userId))) {
+
+        if (userId != null && userId.equals(reserva.getIdUsuario())) {
             return ResponseEntity.ok(ReservaDTO.fromEntity(reserva));
         }
-        
-        log.warn("USER {} attempted to access reserva {} of another user", userId, id);
+
+        log.warn("User {} attempted to access reserva {} of another user", userId, id);
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
@@ -77,17 +76,21 @@ public class ReservaController {
     public ResponseEntity<ReservaDTO> crear(
             @Valid @RequestBody ReservaDTO dto,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
-        
+
         log.info("POST /reservas - User: {}, Cancha: {}", userId, dto.getIdCancha());
-        
-        if (userId == null) {
-            log.warn("Unauthorized attempt to create reserva. No userId header");
+
+        if (userId == null || userId.isBlank()) {
+            log.warn("Unauthorized attempt to create reserva");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        dto.setIdUsuario(Long.parseLong(userId));
-        Reserva entidad = dto.toEntity();
-        Reserva guardada = reservaService.crear(entidad);
+        if (dto.getFecha().isBefore(LocalDate.now())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        dto.setIdUsuario(userId);
+        Reserva guardada = reservaService.crear(dto.toEntity());
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ReservaDTO.fromEntity(guardada));
@@ -99,20 +102,19 @@ public class ReservaController {
             @Valid @RequestBody ReservaDTO dto,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-User-Role", required = false) String role) {
-        
+
         log.info("PUT /reservas/{} - User: {}, Role: {}", id, userId, role);
-        
+
         Reserva reserva = reservaService.obtener(id);
-        
-        // ADMIN puede actualizar cualquier reserva
-        if (!ADMIN_ROLE.equals(role) && (userId == null || !reserva.getIdUsuario().equals(Long.parseLong(userId)))) {
-            log.warn("USER {} attempted to update reserva {} of another user", userId, id);
+
+        if (!ADMIN_ROLE.equals(role) && (userId == null || !userId.equals(reserva.getIdUsuario()))) {
+            log.warn("User {} attempted to update reserva {} of another user", userId, id);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        dto.setIdUsuario(reserva.getIdUsuario()); // Preservar usuario original
-        Reserva entidad = dto.toEntity();
-        Reserva actualizada = reservaService.actualizar(id, entidad);
+        dto.setIdUsuario(reserva.getIdUsuario());
+        Reserva actualizada = reservaService.actualizar(id, dto.toEntity());
+
         return ResponseEntity.ok(ReservaDTO.fromEntity(actualizada));
     }
 
@@ -121,14 +123,13 @@ public class ReservaController {
             @PathVariable Long id,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-User-Role", required = false) String role) {
-        
+
         log.info("DELETE /reservas/{} - User: {}, Role: {}", id, userId, role);
-        
+
         Reserva reserva = reservaService.obtener(id);
-        
-        // ADMIN puede eliminar cualquier reserva
-        if (!ADMIN_ROLE.equals(role) && (userId == null || !reserva.getIdUsuario().equals(Long.parseLong(userId)))) {
-            log.warn("USER {} attempted to delete reserva {} of another user", userId, id);
+
+        if (!ADMIN_ROLE.equals(role) && (userId == null || !userId.equals(reserva.getIdUsuario()))) {
+            log.warn("User {} attempted to delete reserva {} of another user", userId, id);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

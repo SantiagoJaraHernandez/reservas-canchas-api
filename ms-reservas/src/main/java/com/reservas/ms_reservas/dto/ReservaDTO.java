@@ -1,35 +1,36 @@
 package com.reservas.ms_reservas.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.reservas.ms_reservas.model.Reserva;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReservaDTO {
 
     private Long id;
 
-    @NotNull
-    private Long idUsuario;
+    private String idUsuario;
 
-    @NotNull
+    @NotNull(message = "El id de la cancha es requerido")
     private Long idCancha;
 
-    @NotNull
+    @NotNull(message = "La fecha es requerida")
     private LocalDate fecha;
 
-    @NotNull
+    @NotNull(message = "La hora de inicio es requerida")
     private LocalTime horaInicio;
 
-    @NotNull
+    @NotNull(message = "La hora de fin es requerida")
     private LocalTime horaFin;
 
     private String estado;
 
     private LocalDateTime fechaCreacion;
 
-    // getters y setters
     public Long getId() {
         return id;
     }
@@ -38,11 +39,11 @@ public class ReservaDTO {
         this.id = id;
     }
 
-    public Long getIdUsuario() {
+    public String getIdUsuario() {
         return idUsuario;
     }
 
-    public void setIdUsuario(Long idUsuario) {
+    public void setIdUsuario(String idUsuario) {
         this.idUsuario = idUsuario;
     }
 
