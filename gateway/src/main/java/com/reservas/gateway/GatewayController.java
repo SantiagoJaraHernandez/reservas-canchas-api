@@ -43,18 +43,20 @@ public class GatewayController {
     }
 
     @GetMapping("/reservas")
-    public Mono<ResponseEntity<String>> listarReservas() {
+    public Mono<ResponseEntity<String>> listarReservas(ServerWebExchange exchange) {
         return webClient.get()
                 .uri(msReservasUrl + "/reservas")
+                .headers(h -> copyAuthHeaders(exchange, h))
                 .retrieve()
                 .toEntity(String.class)
                 .onErrorResume(this::handleError);
     }
 
     @GetMapping("/reservas/{id}")
-    public Mono<ResponseEntity<String>> obtenerReserva(@PathVariable Long id) {
+    public Mono<ResponseEntity<String>> obtenerReserva(@PathVariable Long id, ServerWebExchange exchange) {
         return webClient.get()
                 .uri(msReservasUrl + "/reservas/{id}", id)
+                .headers(h -> copyAuthHeaders(exchange, h))
                 .retrieve()
                 .toEntity(String.class)
                 .onErrorResume(this::handleError);
