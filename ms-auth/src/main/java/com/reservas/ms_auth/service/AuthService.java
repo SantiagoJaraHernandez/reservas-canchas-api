@@ -39,6 +39,22 @@ public class AuthService {
         return new RegisterResponse(saved.getId(), saved.getEmail(), saved.getRol());
     }
 
+    public RegisterResponse registerAdmin(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new EmailAlreadyExistsException(request.getEmail());
+        }
+
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRol("ADMIN");
+        user.setFechaCreacion(LocalDateTime.now());
+
+        User saved = userRepository.save(user);
+
+        return new RegisterResponse(saved.getId(), saved.getEmail(), saved.getRol());
+    }
+
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(InvalidCredentialsException::new);
