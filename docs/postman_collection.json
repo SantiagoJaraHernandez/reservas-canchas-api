@@ -1,119 +1,675 @@
 {
   "info": {
-    "name": "Reservas Canchas API",
+    "name": "Reservas Canchas API - Pruebas Completas",
+    "description": "Colección completa para probar la API de Reservas de Canchas con autenticación JWT y control de roles.\n\n**Instrucciones de uso:**\n1. Importa esta colección en Postman\n2. Crea un environment con variables:\n   - base_url: http://localhost:8080\n   - jwt_secret: mi_clave_secreta_super_segura_12345\n3. Ejecuta los requests en orden, empezando por Setup\n4. Los tests automáticos guardarán tokens y IDs en variables\n\n**Datos de prueba:**\n- Usuario: usuario@test.com / password123\n- Admin: admin@test.com / admin123",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token_user",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_admin",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cancha_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reserva_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Listar reservas",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8080/reservas",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "reservas"
+      "name": "1. Setup",
+      "description": "Verificar que los servicios estén funcionando",
+      "item": [
+        {
+          "name": "Health Check - Gateway",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Verifica que el gateway esté funcionando correctamente"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has status UP\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql(\"UP\");",
+                  "});"
+                ]
+              }
+            }
           ]
         }
-      }
+      ]
     },
     {
-      "name": "Crear reserva",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"idUsuario\": 1,\n  \"idCancha\": 2,\n  \"fecha\": \"2026-03-10\",\n  \"horaInicio\": \"10:00\",\n  \"horaFin\": \"11:00\"\n}"
+      "name": "2. Autenticación",
+      "description": "Registro, login y gestión de tokens JWT",
+      "item": [
+        {
+          "name": "Registrar Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"usuario@test.com\",\n  \"password\": \"password123\",\n  \"nombre\": \"Juan Pérez\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Registra un nuevo usuario en el sistema"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has user data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.email).to.eql('usuario@test.com');",
+                  "    pm.collectionVariables.set('user_id', jsonData.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
-        "url": {
-          "raw": "http://localhost:8080/reservas",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "reservas"
+        {
+          "name": "Login Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"usuario@test.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Inicia sesión y obtiene token JWT para usuario"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has token\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.collectionVariables.set('token_user', jsonData.token);",
+                  "});"
+                ]
+              }
+            }
           ]
-        }
-      }
-    },
-    {
-      "name": "Obtener reserva",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8080/reservas/:id",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "reservas",
-            ":id"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Actualizar reserva",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"idUsuario\": 1,\n  \"idCancha\": 2,\n  \"fecha\": \"2026-03-10\",\n  \"horaInicio\": \"12:00\",\n  \"horaFin\": \"13:00\"\n}"
         },
-        "url": {
-          "raw": "http://localhost:8080/reservas/:id",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "reservas",
-            ":id"
+        {
+          "name": "Registrar Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"admin123\",\n  \"nombre\": \"Admin Sistema\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register-admin",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register-admin"]
+            },
+            "description": "Registra un nuevo usuario con rol ADMIN en el sistema"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has admin user data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.email).to.eql('admin@test.com');",
+                  "    pm.expect(jsonData.rol).to.eql('ADMIN');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Inicia sesión con el admin creado y obtiene token JWT"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has admin token\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.collectionVariables.set('token_admin', jsonData.token);",
+                  "});"
+                ]
+              }
+            }
           ]
         }
-      }
+      ]
     },
     {
-      "name": "Eliminar reserva",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8080/reservas/:id",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "reservas",
-            ":id"
+      "name": "3. Gestión de Canchas",
+      "description": "CRUD de canchas (solo ADMIN puede crear/modificar)",
+      "item": [
+        {
+          "name": "Listar Canchas (USER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/canchas",
+              "host": ["{{base_url}}"],
+              "path": ["canchas"]
+            },
+            "description": "Lista todas las canchas disponibles (inicialmente vacío)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear Cancha (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cancha de Fútbol 5 - Centro\",\n  \"tipo\": \"FUTBOL_5\",\n  \"precioPorHora\": 25.50,\n  \"disponible\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/canchas",
+              "host": ["{{base_url}}"],
+              "path": ["canchas"]
+            },
+            "description": "Crea una nueva cancha (requiere rol ADMIN)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has cancha data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.nombre).to.eql('Cancha de Fútbol 5 - Centro');",
+                  "    pm.collectionVariables.set('cancha_id', jsonData.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear Cancha como USER (debe fallar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cancha No Autorizada\",\n  \"tipo\": \"FUTBOL_5\",\n  \"precioPorHora\": 20.00,\n  \"disponible\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/canchas",
+              "host": ["{{base_url}}"],
+              "path": ["canchas"]
+            },
+            "description": "Intento de crear cancha como USER (debe retornar 403 Forbidden)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener Cancha por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/canchas/{{cancha_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["canchas", "{{cancha_id}}"]
+            },
+            "description": "Obtiene detalles de una cancha específica"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has correct cancha\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.eql(parseInt(pm.collectionVariables.get('cancha_id')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Cancha (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cancha de Fútbol 5 - Centro Actualizada\",\n  \"tipo\": \"FUTBOL_5\",\n  \"precioPorHora\": 28.00,\n  \"disponible\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/canchas/{{cancha_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["canchas", "{{cancha_id}}"]
+            },
+            "description": "Actualiza una cancha existente (requiere rol ADMIN)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Cancha updated\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.precioPorHora).to.eql(28.00);",
+                  "});"
+                ]
+              }
+            }
           ]
         }
-      }
+      ]
+    },
+    {
+      "name": "4. Gestión de Reservas",
+      "description": "CRUD de reservas con validación de roles y permisos",
+      "item": [
+        {
+          "name": "Crear Reserva (USER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"canchaId\": {{cancha_id}},\n  \"fechaHoraInicio\": \"2026-04-15T14:00:00\",\n  \"duracionHoras\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": ["{{base_url}}"],
+              "path": ["reservas"]
+            },
+            "description": "Crea una nueva reserva para el usuario autenticado"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has reserva data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.usuarioId).to.eql(parseInt(pm.collectionVariables.get('user_id')));",
+                  "    pm.collectionVariables.set('reserva_id', jsonData.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar Mis Reservas (USER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": ["{{base_url}}"],
+              "path": ["reservas"]
+            },
+            "description": "Lista solo las reservas del usuario autenticado"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains user reservations\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.expect(jsonData[0].usuarioId).to.eql(parseInt(pm.collectionVariables.get('user_id')));",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener Reserva por ID (USER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reservas", "{{reserva_id}}"]
+            },
+            "description": "Obtiene detalles de una reserva específica del usuario"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has correct reserva\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.eql(parseInt(pm.collectionVariables.get('reserva_id')));",
+                  "    pm.expect(jsonData.usuarioId).to.eql(parseInt(pm.collectionVariables.get('user_id')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar Reserva (USER)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"canchaId\": {{cancha_id}},\n  \"fechaHoraInicio\": \"2026-04-15T16:00:00\",\n  \"duracionHoras\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reservas", "{{reserva_id}}"]
+            },
+            "description": "Actualiza una reserva existente del usuario"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Reserva updated\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.duracionHoras).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar Reserva (USER)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reservas", "{{reserva_id}}"]
+            },
+            "description": "Elimina una reserva del usuario"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verificar Eliminación",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_user}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas/{{reserva_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reservas", "{{reserva_id}}"]
+            },
+            "description": "Verifica que la reserva haya sido eliminada (debe retornar 404)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
