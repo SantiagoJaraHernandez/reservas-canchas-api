@@ -1,0 +1,87 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: reservas-dev-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: reservasdb_dev
+      POSTGRES_USER: reservas
+      POSTGRES_PASSWORD: reservas123
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - reservas-dev-net
+
+  mongodb:
+    image: mongo:7
+    container_name: reservas-dev-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: authdb_dev
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_dev_data:/data/db
+    networks:
+      - reservas-dev-net
+
+  ms-auth:
+    build: ../ms-auth
+    container_name: reservas-dev-ms-auth
+    restart: always
+    environment:
+      SERVER_PORT: 8082
+      MONGODB_URI: mongodb://mongodb:27017/authdb_dev
+      JWT_SECRET: dev_secret_2026
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongodb
+    networks:
+      - reservas-dev-net
+
+  ms-reservas:
+    build: ../ms-reservas
+    container_name: reservas-dev-ms-reservas
+    restart: always
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/reservasdb_dev
+      SPRING_DATASOURCE_USERNAME: reservas
+      SPRING_DATASOURCE_PASSWORD: reservas123
+      JPA_HIBERNATE_DDL_AUTO: update
+      SHOW_SQL: true
+    ports:
+      - "8092:8081"
+    depends_on:
+      - postgres
+    networks:
+      - reservas-dev-net
+
+  gateway:
+    build: ../gateway
+    container_name: reservas-dev-gateway
+    restart: always
+    environment:
+      SERVER_PORT: 8080
+      MS_RESERVAS_URL: http://ms-reservas:8081
+      MS_AUTH_URL: http://ms-auth:8082
+      JWT_SECRET: dev_secret_2026
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5176
+    ports:
+      - "8002:8080"
+    depends_on:
+      - ms-auth
+      - ms-reservas
+    networks:
+      - reservas-dev-net
+
+volumes:
+  postgres_dev_data:
+  mongodb_dev_data:
+
+networks:
+  reservas-dev-net:
+    driver: bridge
