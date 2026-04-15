@@ -20,6 +20,13 @@ public class GlobalExceptionHandler {
                 .body(errorBody(ex.getMessage()));
     }
 
+    @ExceptionHandler(CanchaNotFoundException.class)
+    public ResponseEntity<?> handleCanchaNotFound(CanchaNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(errorBody(ex.getMessage()));
+    }
+
     @ExceptionHandler(CanchaOcupadaException.class)
     public ResponseEntity<?> handleConflict(CanchaOcupadaException ex) {
         return ResponseEntity
