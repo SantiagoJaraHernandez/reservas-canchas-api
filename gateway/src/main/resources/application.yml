@@ -1,8 +1,20 @@
 server:
   port: 8080
 
+spring:
+  application:
+    name: gateway
+  webflux:
+    base-path: /
+
 ms-reservas:
   base-url: ${MS_RESERVAS_URL:http://localhost:8081}
+
+ms-auth:
+  base-url: ${MS_AUTH_URL:http://localhost:8082}
+
+jwt:
+  secret: ${JWT_SECRET:miClaveSecretaSuperSeguraParaDesarrollo2026}
 
 cors:
   allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:5176}
