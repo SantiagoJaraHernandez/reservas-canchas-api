@@ -2,15 +2,16 @@ server:
   port: 8081
 
 spring:
+  application:
+    name: ms-reservas
   datasource:
-    # using port 5433 to hit the docker container instead of the local service
-    url: jdbc:postgresql://localhost:5433/reservasdb
-    username: reservas
-    password: reservas123
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/reservasdb}
+    username: ${SPRING_DATASOURCE_USERNAME:reservas}
+    password: ${SPRING_DATASOURCE_PASSWORD:reservas123}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:true}
